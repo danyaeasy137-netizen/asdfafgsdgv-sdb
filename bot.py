@@ -3,6 +3,7 @@ import pickle
 import random
 import string
 import asyncio
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -20,10 +21,12 @@ from keyboards import (
     PremiumButton
 )
 
-# --- КОНФИГУРАЦИЯ БОТА (ПРЯМО В КОДЕ) ---
-BOT_TOKEN = "8878060944:AAEub0CJ9TJnteMN_-HuzzYN2r7NkmPpDWw"
-ADMIN_IDS = [8947091063, 8998596218]
-ADMIN_LOG_IDS = [8947091063, 8998596218]
+# --- ЗАГРУЗКА КОНФИГУРАЦИИ ИЗ .env ---
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
+ADMIN_LOG_IDS = [int(x.strip()) for x in os.getenv("ADMIN_LOG_IDS", "").split(",") if x.strip()]
 
 async def send_admin_log(log_type: str, data: dict):
     """Логирование сделок и проблем для админов"""
