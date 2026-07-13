@@ -143,7 +143,7 @@ TEXTS = {
             f'• После проверки покупатель подтверждает получение и ордер закрывается'
         ),
         "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Technical Support',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Your referral link</b>\n<code>https://t.me/BIumP2Pbot?start=ref_{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Your referral link</b>\n<code>https://t.me/Blum_P2Pbot?start=ref_{}</code>',
         "lang_selection_title": "🌐 Выберите язык / Choose language",
         "btn_share_order": "Share order link",
         "btn_support": "Support",
@@ -231,7 +231,7 @@ TEXTS = {
             f'• После проверки покупатель подтверждает получение и ордер закрывается'
         ),
         "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Техническая поддержка',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Ваша реферальная ссылка</b>\n<code>https://t.me/BIumP2Pbot?start=ref_{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Ваша реферальная ссылка</b>\n<code>https://t.me/Blum_P2Pbot?start=ref_{}</code>',
         "lang_selection_title": "🌐 Выберите язык / Choose language",
         "btn_share_order": "Поделиться ссылкой",
         "btn_support": "Поддержка",
