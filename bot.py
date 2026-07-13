@@ -116,7 +116,7 @@ TEXTS = {
             f'We have notified the seller. Please wait until they transfer the gift to support <b>@BlumP2Phelp</b>'
         ),
         "seller_notification": (
-            f'<tg-emoji emoji-id="5386508168849283575">💰</tg-emoji> <b>The buyer has paid for your item #{{order_id}}</b>\n\n'
+            f'<blockquote><tg-emoji emoji-id="5449397880315999468">💰</tg-emoji> <b>The buyer has paid for your item #{{order_id}}</b></blockquote>\n\n'
             f'Funds are frozen in our bot until the goods are transferred to <b>@BlumP2Phelp</b>\n\n'
             f'<tg-emoji emoji-id="5231415241933357312">📦</tg-emoji> Please transfer all goods or links to our support team to complete the transaction.'
         ),
@@ -154,7 +154,6 @@ TEXTS = {
         "btn_retry_check": "Retry check",
         "btn_write_support": "Write to support",
         "balance_updated": "✅ Your balance has been topped up by {} {}",
-        "admin_balance_given": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> The bot administrator has topped up your balance upon a top-up request - #{}',
         "wallets": "Wallets"
     },
     "ru": {
@@ -243,7 +242,6 @@ TEXTS = {
         "btn_retry_check": "Повторить проверку",
         "btn_write_support": "Написать в поддержку",
         "balance_updated": "✅ Ваш баланс пополнен на {} {}",
-        "admin_balance_given": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> Администратор бота пополнил ваш баланс по заявке пополнения - #{}',
         "wallets": "Кошельки"
     }
 }
@@ -434,9 +432,6 @@ async def admin_process_balance(message: types.Message, state: FSMContext):
         register_user(user_id)
         lang = get_lang(user_id)
         
-        # Генерируем номер заявки
-        request_id = generate_code(6)
-        
         if currency == "gram":
             db[user_id]["balance_gram"] += amount
         elif currency in ["rub", "card"]:
@@ -454,11 +449,7 @@ async def admin_process_balance(message: types.Message, state: FSMContext):
             raise ValueError()
             
         save_db()
-        
-        # Новое сообщение с номером заявки вместо суммы
-        await message.answer(
-            TEXTS[lang]["admin_balance_given"].format(request_id)
-        )
+        await message.answer(TEXTS[lang]["balance_updated"].format(amount, currency.upper()))
     except Exception:
         await message.answer("❌ Неверный формат. Пример: 777 rub")
     finally:
