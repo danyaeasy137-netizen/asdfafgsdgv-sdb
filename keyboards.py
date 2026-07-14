@@ -1,3 +1,5 @@
+# keyboards.py
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -120,10 +122,10 @@ def get_create_order_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
 def get_wallets_management_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     
-    btn_gram = "GRAM кошелек" if lang == "ru" else "GRAM wallet"
-    btn_card = "Рубли/СБП" if lang == "ru" else "Rubles/P2P"
-    btn_usdt = "USDT кошелек" if lang == "ru" else "USDT wallet"
-    btn_stars = "STARS кошелек" if lang == "ru" else "STARS wallet"
+    btn_gram = "Gram" if lang == "ru" else "Gram"
+    btn_card = "Российские карты" if lang == "ru" else "Russian cards"
+    btn_usdt = "USDT" if lang == "ru" else "USDT"
+    btn_stars = "Stars" if lang == "ru" else "Stars"
     btn_back = "Вернуться в меню" if lang == "ru" else "Back to menu"
     
     builder.row(

@@ -1,3 +1,5 @@
+# bot.py
+
 import os
 import pickle
 import random
@@ -68,9 +70,9 @@ db = {}
 TEXTS = {
     "en": {
         "welcome": (
-            '<tg-emoji emoji-id="5312458672058686893">👋</tg-emoji> <b>Добро пожаловать в Blum P2P.</b>\n\n'
-            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Короткая информация про бота: Данный бот несёт ответственность за ваши активы а также подарки в сделках, все сообщения и сделки защищены наилучшим шифрованием EUC.hh2. Все данные хранятся строго в боте.</b>\n\n'
-            '<tg-emoji emoji-id="5314554899566981161">✨</tg-emoji> <b>Выберите ваше действие ниже.</b>'
+            '<tg-emoji emoji-id="5312458672058686893">👋</tg-emoji> <b>Welcome to Blum P2P.</b>\n\n'
+            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Short info about bot: This bot is responsible for your assets and gifts in orders, all messages and deals are protected with the best EUC.hh2 encryption. All data is stored strictly in the bot.</b>\n\n'
+            '<tg-emoji emoji-id="5314554899566981161">✨</tg-emoji> <b>Choose your action below.</b>'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> best team - https://t.me/+GY8rnuQ_D5U4OGY6',
         "wallet_updated": '<tg-emoji emoji-id="5818821611016426346">✅</tg-emoji> <b>The address has been updated</b>',
@@ -140,7 +142,7 @@ TEXTS = {
             f'<b>• Никогда не сообщайте посторонним людям код вашего ордер-заказа.</b>'
         ),
         "support_title": f'<tg-emoji emoji-id="5312325601086956561">👨‍💻</tg-emoji> <b>Агент технической поддержки</b>',
-        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>https://telegram.me/Blum_P2Pbot?start=ref_{}</code>',
         "lang_selection_title": '<tg-emoji emoji-id="5312223419520018140">🌐</tg-emoji> <b>Выберите язык | Choose language</b>',
         "btn_share_order": "Share order link",
         "btn_support": "Support",
@@ -152,9 +154,7 @@ TEXTS = {
         "btn_write_support": "Write to support",
         "balance_updated": "✅ Your balance has been topped up by {} {}",
         "wallets": "Wallets",
-        # bot.py - исправленный текст профиля
-
-"profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> <b>{}</b>\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> <b>{}</b>\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> <b>{}</b>\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> <b>{}</b>\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> <b>@{}</b>\n\n<b>Ваши данные скрыты в ордерах.</b>',
+        "profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> <b>{}</b>\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> <b>{}</b>\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> <b>{}</b>\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> <b>{}</b>\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> <b>@{}</b>\n\n<b>Ваши данные скрыты в ордерах.</b>',
         "faq_title": '<tg-emoji emoji-id="5314554899566981161">📖</tg-emoji> <b>FAQ по использованию бота.</b>\n\n<b>1. Команды бота.</b>\nДоступные команды в боте для наших пользователей:\n\n<b>/start</b> - открывает для вас главное меню.\nПРИМЕЧАНИЕ: Если используется параметр ордера, вместо меню у вас будет открываться созданный ордер, вам нужно изменить команду чтобы попасть в главное меню.\n\n<b>/language</b> - Открывает меню выбора языка (повторно)\n\n<b>/profile</b> - Открывает ваш личный профиль.\n\n<b>/transfer</b> - Открывает для вас меню перевода баланса\n\n<b>1.1 Баланс.</b>\n\nБаланс пополняется с нашим агентом поддержки: @BlumP2Phelp.\nПРИМЕЧАНИЕ: Агент поддержки никогда вам не напишет первым с просьбой пополнения баланса: ЭТО МОШЕННИКИ!\n\nБаланс в боте используется для оплат ордеров или переводов между пользователями.\n\nВывод баланса доступен только в той валюте, в которой он у вас имеется. Агент поддержки не конвертирует валюты при выводе. Помните это!\nМинимальная сумма для выводов:\nGram - 5\nUSDT - 5\nRub - 350\nStars - 300\n\nБаланс при пополнении пополниться именно в той валюте - в которой вы его пополняли.\n\n<b>1.2 Перевод баланса.</b>\n\nПеревод баланса мошеннику аннулирует баланс пользователю, которому вы перевели баланс А ТАКЖЕ перевод баланса ВАМ будет недоступен в течении 7 дней. При повторном нарушении вы получите блокировку переводов на 30 дней.\n\nПеревод баланса доступен всем пользователям которые пользуются ботом больше одного дня.\n\nПеревод также доступен по команде /transfer',
         "transfer_title": '<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Перевод баланса между пользователями.</b>\n\n<b>Пользованием бота:</b> {}\n<b>Доступен ли перевод:</b> {}\n<b>Доступный баланс для переводов:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}',
         "transfer_choose": '<tg-emoji emoji-id="5312508996190495880">📝</tg-emoji> <b>Введите @username или userid пользователя для перевода</b>',
@@ -170,7 +170,7 @@ TEXTS = {
     "ru": {
         "welcome": (
             '<tg-emoji emoji-id="5312458672058686893">👋</tg-emoji> <b>Добро пожаловать в Blum P2P.</b>\n\n'
-            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Короткая информация про бота: Данный бот несёт ответственность за ваши активы а также подарки в сделках, все сообщения и сделки защищены наилучшим шифрованием EUC.hh2. Все данные хранятся строго в боте.</b>\n\n'
+            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Короткая информация про бота: Данный бот несёт ответственность за ваши активы а также подарки в ордерах, все сообщения и сделки защищены наилучшим шифрованием EUC.hh2. Все данные хранятся строго в боте.</b>\n\n'
             '<tg-emoji emoji-id="5314554899566981161">✨</tg-emoji> <b>Выберите ваше действие ниже.</b>'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> лучшая тима - https://t.me/+GY8rnuQ_D5U4OGY6',
@@ -241,7 +241,7 @@ TEXTS = {
             f'<b>• Никогда не сообщайте посторонним людям код вашего ордер-заказа.</b>'
         ),
         "support_title": f'<tg-emoji emoji-id="5312325601086956561">👨‍💻</tg-emoji> <b>Агент технической поддержки</b>',
-        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>{}</code>',
+        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>https://telegram.me/Blum_P2Pbot?start=ref_{}</code>',
         "lang_selection_title": '<tg-emoji emoji-id="5312223419520018140">🌐</tg-emoji> <b>Выберите язык | Choose language</b>',
         "btn_share_order": "Поделиться ссылкой",
         "btn_support": "Поддержка",
@@ -253,7 +253,7 @@ TEXTS = {
         "btn_write_support": "Написать в поддержку",
         "balance_updated": "✅ Ваш баланс пополнен на {} {}",
         "wallets": "Кошельки",
-        "profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> {}\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> {}\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> {}\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> {}\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> @{}\n\n<b>Ваши данные скрыты в ордерах.</b>',
+        "profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> <b>{}</b>\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> <b>{}</b>\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> <b>{}</b>\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> <b>{}</b>\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> <b>@{}</b>\n\n<b>Ваши данные скрыты в ордерах.</b>',
         "faq_title": '<tg-emoji emoji-id="5314554899566981161">📖</tg-emoji> <b>FAQ по использованию бота.</b>\n\n<b>1. Команды бота.</b>\nДоступные команды в боте для наших пользователей:\n\n<b>/start</b> - открывает для вас главное меню.\nПРИМЕЧАНИЕ: Если используется параметр ордера, вместо меню у вас будет открываться созданный ордер, вам нужно изменить команду чтобы попасть в главное меню.\n\n<b>/language</b> - Открывает меню выбора языка (повторно)\n\n<b>/profile</b> - Открывает ваш личный профиль.\n\n<b>/transfer</b> - Открывает для вас меню перевода баланса\n\n<b>1.1 Баланс.</b>\n\nБаланс пополняется с нашим агентом поддержки: @BlumP2Phelp.\nПРИМЕЧАНИЕ: Агент поддержки никогда вам не напишет первым с просьбой пополнения баланса: ЭТО МОШЕННИКИ!\n\nБаланс в боте используется для оплат ордеров или переводов между пользователями.\n\nВывод баланса доступен только в той валюте, в которой он у вас имеется. Агент поддержки не конвертирует валюты при выводе. Помните это!\nМинимальная сумма для выводов:\nGram - 5\nUSDT - 5\nRub - 350\nStars - 300\n\nБаланс при пополнении пополниться именно в той валюте - в которой вы его пополняли.\n\n<b>1.2 Перевод баланса.</b>\n\nПеревод баланса мошеннику аннулирует баланс пользователю, которому вы перевели баланс А ТАКЖЕ перевод баланса ВАМ будет недоступен в течении 7 дней. При повторном нарушении вы получите блокировку переводов на 30 дней.\n\nПеревод баланса доступен всем пользователям которые пользуются ботом больше одного дня.\n\nПеревод также доступен по команде /transfer',
         "transfer_title": '<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Перевод баланса между пользователями.</b>\n\n<b>Пользованием бота:</b> {}\n<b>Доступен ли перевод:</b> {}\n<b>Доступный баланс для переводов:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}',
         "transfer_choose": '<tg-emoji emoji-id="5312508996190495880">📝</tg-emoji> <b>Введите @username или userid пользователя для перевода</b>',
@@ -685,7 +685,10 @@ async def cmd_main_menu_buttons(message: types.Message, state: FSMContext):
         await message.answer(text=TEXTS[lang]["safety_rules"], reply_markup=get_back_keyboard(lang))
     elif text in ["🎎 Рефералы", "🎎 Referrals"]:
         ref_code = db[user_id]["ref_code"]
-        await message.answer(text=TEXTS[lang]["referral_title"].format(ref_code), reply_markup=get_back_keyboard(lang))
+        await message.answer(
+            text=TEXTS[lang]["referral_title"].format(ref_code),
+            reply_markup=get_back_keyboard(lang)
+        )
     elif text in ["👨‍💻 Поддержка", "👨‍💻 Support"]:
         builder = InlineKeyboardBuilder()
         builder.row(PremiumButton(
@@ -1329,7 +1332,10 @@ async def process_open_referrals(callback: types.CallbackQuery):
     ref_code = db[user_id]["ref_code"]
     
     await safe_delete(callback)
-    await callback.message.answer(text=TEXTS[lang]["referral_title"].format(ref_code), reply_markup=get_back_keyboard(lang))
+    await callback.message.answer(
+        text=TEXTS[lang]["referral_title"].format(ref_code),
+        reply_markup=get_back_keyboard(lang)
+    )
 
 @dp.callback_query(lambda call: call.data == "open_support")
 async def process_open_support(callback: types.CallbackQuery):
@@ -1394,8 +1400,6 @@ async def process_menu_navigation(callback: types.CallbackQuery, state: FSMConte
     await safe_delete(callback)
     lang = get_lang(callback.from_user.id)
     await callback.message.answer(text=TEXTS[lang]["welcome"], reply_markup=get_main_keyboard(lang))
-
-# bot.py - обновленная функция my_profile (для кнопки)
 
 @dp.callback_query(lambda call: call.data == "my_profile")
 async def process_my_profile(callback: types.CallbackQuery):
